@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>وصل - ربط المايك الخارجي</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0f0f12; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .card { background: #18181f; border: 1px solid #2a2a35; border-radius: 16px; padding: 32px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .logo { font-size: 28px; font-weight: bold; color: #ff5e62; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .logo span { width: 12px; height: 12px; background: #ff9966; border-radius: 50%; display: inline-block; }
+        h2 { font-size: 20px; margin-bottom: 8px; color: #e1e1e6; }
+        p { font-size: 14px; color: #8d8d99; margin-bottom: 24px; }
+        input { width: 100%; padding: 14px; background: #0f0f12; border: 1px solid #333344; border-radius: 10px; color: #fff; font-size: 18px; text-align: center; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; outline: none; }
+        input:focus { border-color: #ff5e62; }
+        button { width: 100%; padding: 14px; background: linear-gradient(135deg, #ff9966, #ff5e62); border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        .status { margin-top: 16px; font-size: 14px; min-height: 20px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">وصل <span></span></div>
+        <h2>الصق كودك عشان يفتح المايك</h2>
+        <p>قم بإدخال كود الربط الظاهر لديك داخل ماب روبلوكس</p>
+        <input type="text" id="code input" placeholder="VBMU-6T78" maxlength="9">
+        <button id="connectBtn">اربط وافتح المايك 🎙️</button>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        const BACKEND_URL = "https://your-domain.com/api";
+
+        document.getElementById('connectBtn').addEventListener('click', async () => {
+            const codeInput = document.getElementById('code input').value.trim();
+            const statusDiv = document.getElementById('status');
+
+            if (!codeInput) {
+                statusDiv.style.color = '#ff4d4d';
+                statusDiv.innerText = 'يرجى كتابة الكود أولاً';
+                return;
+            }
+
+            try {
+                statusDiv.style.color = '#ffcc00';
+                statusDiv.innerText = 'جاري طلب إذن المايك...';
+
+                // Request microphone access from browser
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                statusDiv.innerText = 'جاري التحقق من الكود...';
+
+                const response = await fetch(`${BACKEND_URL}/connect-mic`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: codeInput })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    statusDiv.style.color = '#00ff88';
+                    statusDiv.innerText = `تم الربط بنجاح! المايك يعمل الآن لـ ${result.user}`;
+                    // WebRTC Peer-to-Peer connection initialization goes here
+                } else {
+                    statusDiv.style.color = '#ff4d4d';
+                    statusDiv.innerText = result.message || 'الكود غير صحيح';
+                }
+            } catch (err) {
+                statusDiv.style.color = '#ff4d4d';
+                statusDiv.innerText = 'لم يتم إعطاء صلاحية المايك أو حدث خطأ في الاتصال';
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>
