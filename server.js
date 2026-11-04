@@ -1,9 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path'); // أضف هذا السطر
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// قراءة ملفات الواجهة (index.html) من نفس المجلد
+app.use(express.static(__dirname)); // أضف هذا السطر
 
 // In-memory store for active pairing codes
 // Production tip: Use Redis or Firebase Realtime DB
